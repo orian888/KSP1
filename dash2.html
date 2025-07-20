@@ -1,0 +1,131 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>דשבורד אסטרטגי</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #2a5298, #1e3c72);
+            color: #fff;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+        header {
+            text-align: center;
+            padding: 30px 20px;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.3);
+        }
+        h1 {
+            font-size: 2em;
+            margin: 0;
+        }
+        .content {
+            max-width: 1200px;
+            padding: 20px;
+            text-align: center;
+        }
+        .description {
+            font-size: 1.1em;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+        .tableau-container {
+            width: 100%;
+            height: 600px;
+            margin: 0 auto;
+        }
+        .back-button {
+            background: linear-gradient(45deg, #ff8e53, #ff6b6b);
+            border: none;
+            padding: 10px 20px;
+            font-size: 1em;
+            color: #fff;
+            border-radius: 20px;
+            cursor: pointer;
+            text-decoration: none;
+            margin-top: 20px;
+            display: inline-block;
+        }
+        .back-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>מערכת 2 – דשבורד אסטרטגי</h1>
+    </header>
+    <div class="content">
+        <div class="description">
+            <p>דשבורד אסטרטגי מתמקד בניתוח מגמות ארוכות טווח ותכנון אסטרטגי. הוא מספק תובנות על ביצועי השוק, שביעות רצון לקוחות ויעילות תהליכים, תוך תמיכה בקבלת החלטות ברמה הגבוהה.</p>
+        </div>
+        <div class="tableau-container">
+            <div id="tableauViz"></div>
+        </div>
+        <a href="index.html" class="back-button">חזור לדף הראשי</a>
+    </div>
+    <script src="https://public.tableau.com/javascripts/api/viz_v1.js"></script>
+    <script>
+        // Initialize Tableau visualization
+        function initViz() {
+            const containerDiv = document.getElementById("tableauViz");
+            const vizUrl = "https://public.tableau.com/views/Book3_17530454387630/sheet10?:language=en-US&publish=yes&:sid=&:redirect=auth&:display_count=n&:origin=viz_share_link";
+            const options = {
+                width: "100%",
+                height: "600px",
+                hideTabs: true,
+                hideToolbar: true,
+            };
+            new tableau.Viz(containerDiv, vizUrl, options);
+        }
+        window.onload = initViz;
+    </script>
+</body>
+</html>
